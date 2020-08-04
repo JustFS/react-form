@@ -1,114 +1,162 @@
-import React from 'react';
-import './App.css';
+import React, { Component } from "react";
 
-export default class extends React.Component {
+export default class extends Component {
   constructor(props) {
     super(props);
-    this.state = {  
-      name: '', 
-      company: '',
-      phone: '',
-      email: '',
-      message: '',
+    this.state = {
+      name: "",
+      company: "",
+      phone: "",
+      email: "",
+      message: "",
     };
-
-    this.handleNameChange = this.handleNameChange.bind(this);
-    this.handleCompanyChange = this.handleCompanyChange.bind(this);
-    this.handlePhoneChange = this.handlePhoneChange.bind(this);
-    this.handleEmailChange = this.handleEmailChange.bind(this);
-    this.handleMessageChange = this.handleMessageChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  handleNameChange(e) {
-    this.setState({name: e.target.value})
-  }
-  handleCompanyChange(e) {
-    this.setState({company: e.target.value})
-  }
-  handlePhoneChange(e) {
-    this.setState({phone: e.target.value})
-  }
-  handleEmailChange(e) {
-    this.setState({email: e.target.value})
-  }
-  handleMessageChange(e) {
-    this.setState({message: e.target.value})
+  handleChange(e) {
+    this.setState({ [e.target.name] : e.target.value})
   }
 
   handleSubmit(e) {
     e.preventDefault();
-    console.log(this.state);
-    const templateId = 'template_aofmtvBG';
+    let {name, company, phone, email, message} = this.state;
+    let nameS = document.getElementById('name');
+    let emailS = document.getElementById('email');
+    let messageS = document.getElementById('message');
+    let formMess = document.querySelector('.form-message');
 
-    this.sendFeedback(templateId, {name: this.state.name, company: this.state.company, phone: this.state.phone, email: this.state.email, message: this.state.message})
+    const isEmail = () => {
+      let isMail = document.getElementById('not-mail')
+      let regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
+      if(email.match(regex)) {
+        isMail.style.display = 'none';
+        return true;
+      } else {
+        isMail.style.display = 'block';
+        isMail.style.animation = 'dongle 1s';
+        setTimeout(() => {
+          isMail.style.animation = 'none';
+        }, 1000);
+        return false;
+      }
+    }
+
+    if (name && isEmail() && message){
+      const templateId = "template_aofmtvBG";
+
+      nameS.classList.remove('red');
+      emailS.classList.remove('red');
+      messageS.classList.remove('red');
+
+      this.sendFeedback(templateId, {
+        name,
+        company,
+        phone,
+        email,
+        message,
+      });
+    } else {
+      formMess.innerHTML = "Merci de remplir correctement les champs requis *";
+      formMess.style.background = 'rgb(253, 87, 87)';
+      formMess.style.opacity = '1';
+
+      function error(type, path){
+        if (!type) {
+          path.classList.add('error');
+        }
+      }
+      error(name,nameS);
+      error(email, emailS);
+      error(message, messageS);
+    }
   }
-  
-    sendFeedback (templateId, variables) {
-    window.emailjs.send(
-      'gmail', templateId,
-      variables)
-      .then(res => {
-        console.log('Email successfully sent!');
-        this.setState({name: '', company: '', phone: '', email: '', message: ''})
+
+  sendFeedback(templateId, variables) {
+    let formMess = document.querySelector('.form-message');
+
+    window.emailjs
+      .send("gmail", templateId, variables)
+      .then((res) => {
+        formMess.innerHTML = "Message envoyé ! Nous vous recontacterons dès que possible.";
+        formMess.style.background = '#00c1ec';
+        formMess.style.opacity = '1';
+
+        document.getElementById('name').classList.remove('error');
+        document.getElementById('email').classList.remove('error');
+        document.getElementById('message').classList.remove('error');
+
+        this.setState({
+          name: "",
+          company: "",
+          phone: "",
+          email: "",
+          message: "",
+        });
+        setTimeout(() => {
+          formMess.style.opacity = '0';
+        }, 5000);
       })
-      .catch(err => console.error('Oh well, you failed. Here some thoughts on the error that occured:', err))
+      .catch((err) =>
+        formMess.innerHTML = "Une erreur s'est produite, veuillez réessayer."
+      );
   }
-
 
   render() {
     return (
-      <form className="test-mailing">
-        <h2>Contactez moi</h2>
+      <form className="contact-form">
+        <h2>contactez-nous</h2>
         <div className="form-content">
-          <input 
+          <input
             type="text"
             id="name"
             name="name"
             required
-            onChange={this.handleNameChange}
-            placeholder="Nom"
+            onChange={this.handleChange.bind(this)}
+            placeholder="nom *"
             value={this.state.name}
+            autoComplete="off"
           />
-          <input 
+          <input
             type="text"
             id="company"
             name="company"
-            required
-            onChange={this.handleCompanyChange}
-            placeholder="Société"
+            onChange={this.handleChange.bind(this)}
+            placeholder="société"
             value={this.state.company}
           />
-          <input 
+          <input
             type="text"
             id="phone"
             name="phone"
-            required
-            onChange={this.handlePhoneChange}
-            placeholder="Téléphone"
+            onChange={this.handleChange.bind(this)}
+            placeholder="téléphone"
             value={this.state.phone}
           />
-          <input 
-            type="mail"
-            id="email"
-            name="email"
-            required
-            onChange={this.handleEmailChange}
-            placeholder="Email"
-            value={this.state.email}
-          />
+          <div className="email-content">
+            <label id="not-mail">Email non valide</label>
+            <input
+              type="mail"
+              id="email"
+              name="email"
+              required
+              onChange={this.handleChange.bind(this)}
+              placeholder="email *"
+              value={this.state.email}
+              autoComplete="off"
+            />
+          </div>
           <textarea
             id="message"
             name="message"
-            onChange={this.handleMessageChange}
-            placeholder="Post some lorem ipsum here"
+            onChange={this.handleChange.bind(this)}
+            placeholder="message *"
             required
             value={this.state.message}
           />
         </div>
-        <input type="button" value="Submit" onClick={this.handleSubmit} />
+        <input className="button" type="button" value="envoyer" onClick={this.handleSubmit.bind(this)} />
+        <div className="form-message"></div>
       </form>
-    )
+    );
   }
-
 }
