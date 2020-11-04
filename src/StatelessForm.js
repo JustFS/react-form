@@ -34,7 +34,7 @@ const ContactForm = () => {
     };
 
     if (name && isEmail() && message) {
-      const templateId = "template_aofmtvBG";
+      const templateId = ****ICI VOTRE TEMPLATE ID (exemple "template_aoffrvBG")****;
 
       nameS.classList.remove("red");
       emailS.classList.remove("red");
